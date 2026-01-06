@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueYield | Investor Pitch</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --bg-card: rgba(26, 26, 37, 0.7);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --text-muted: #555566;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%);
+            --glow-blue: 0 0 40px rgba(59, 130, 246, 0.3);
+            --glow-green: 0 0 40px rgba(16, 185, 129, 0.3);
+            --glow-red: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* Grid overlay effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Ambient glow */
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 1s ease;
+        }
+
+        .glow-1 {
+            top: -200px;
+            right: -200px;
+            background: var(--accent-blue);
+        }
+
+        .glow-2 {
+            bottom: -300px;
+            left: -200px;
+            background: var(--accent-cyan);
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slide-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slide-dot:hover {
+            background: var(--text-secondary);
+            transform: scale(1.2);
+        }
+
+        .slide-dot.active {
+            background: var(--accent-blue);
+            box-shadow: 0 0 10px var(--accent-blue);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .slide-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-present {
+            padding: 10px 20px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-present:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-blue);
+        }
+
+        /* Slides Container */
+        .slides-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 60px 60px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            z-index: 2;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        .headline {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        .headline-huge {
+            font-size: clamp(3rem, 8vw, 6rem);
+        }
+
+        .headline .accent {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .headline .accent-green {
+            background: var(--gradient-success);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .headline .accent-red {
+            background: var(--gradient-danger);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subheadline {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-card.danger::before {
+            background: var(--gradient-danger);
+        }
+
+        .metric-card.success::before {
+            background: var(--gradient-success);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .metric-value.danger {
+            color: var(--accent-red);
+        }
+
+        .metric-value.success {
+            color: var(--accent-green);
+        }
+
+        .metric-value.warning {
+            color: var(--accent-yellow);
+        }
+
+        .metric-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+        }
+
+        .metric-delta.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+
+        /* Hero Slide Specific */
+        .hero-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .hero-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(3.5rem, 10vw, 7rem);
+            font-weight: 400;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 60px;
+            margin-top: 4rem;
+            padding-top: 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 500;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .two-col-wide {
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .progress-fill.danger {
+            background: var(--gradient-danger);
+        }
+
+        .progress-fill.success {
+            background: var(--gradient-success);
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .comparison-card:hover {
+            transform: scale(1.02);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .comparison-card.recommended {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .comparison-card.recommended::before {
+            content: 'RECOMMENDED';
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: var(--accent-green);
+            margin-bottom: 16px;
+        }
+
+        .comparison-amount {
+            font-family: 'Instrument Serif', serif;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .comparison-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .comparison-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .comparison-list li:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-list .value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Interactive Slider */
+        .slider-container {
+            margin: 30px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-blue);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--glow-blue);
+            transition: transform 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Risk Cards */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .risk-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .risk-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .risk-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .risk-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .risk-icon.danger {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .risk-title {
+            font-weight: 600;
+        }
+
+        .risk-mitigation {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .risk-mitigation strong {
+            color: var(--accent-green);
+        }
+
+        /* The Ask Section */
+        .ask-amount {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .ask-value {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(4rem, 12vw, 8rem);
+            font-weight: 400;
+            background: var(--gradient-success);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .ask-label {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+
+        .use-of-funds {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .fund-item {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fund-percent {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            margin-bottom: 8px;
+        }
+
+        .fund-amount {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .fund-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ROI Section */
+        .roi-highlight {
+            text-align: center;
+            padding: 60px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 24px;
+            margin-bottom: 40px;
+        }
+
+        .roi-value {
+            font-family: 'Instrument Serif', serif;
+            font-size: 5rem;
+            background: var(--gradient-success);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .roi-label {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* Navigation Arrows */
+        .nav-arrows {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-arrow:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-arrow:disabled:hover {
+            background: var(--bg-card);
+            transform: none;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+        .delay-6 { animation-delay: 0.6s; opacity: 0; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .two-col {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .use-of-funds {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 0 20px;
+            }
+
+            .slide {
+                padding: 100px 20px 80px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .risk-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .use-of-funds {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Fullscreen mode */
+        body.fullscreen .nav {
+            display: none;
+        }
+
+        body.fullscreen .slide {
+            padding-top: 60px;
+        }
+
+        /* Problem visualization */
+        .burn-visual {
+            position: relative;
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .burn-bar {
+            width: 120px;
+            background: var(--bg-tertiary);
+            border-radius: 12px 12px 0 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            transition: height 1s ease;
+        }
+
+        .burn-bar.revenue {
+            height: 80px;
+            background: linear-gradient(180deg, var(--accent-green) 0%, rgba(16, 185, 129, 0.3) 100%);
+        }
+
+        .burn-bar.payouts {
+            height: 160px;
+            background: linear-gradient(180deg, var(--accent-red) 0%, rgba(239, 68, 68, 0.3) 100%);
+        }
+
+        .burn-bar.costs {
+            height: 220px;
+            background: linear-gradient(180deg, var(--accent-yellow) 0%, rgba(245, 158, 11, 0.3) 100%);
+        }
+
+        .burn-bar-label {
+            position: absolute;
+            bottom: -40px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .burn-bar-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 60px;
+            padding-top: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: -33px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px var(--bg-primary), 0 0 0 6px var(--accent-blue);
+        }
+
+        .timeline-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timeline-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient Glows -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="logo">TrueYield</div>
+        <div class="nav-center" id="slideDots"></div>
+        <div class="nav-right">
+            <span class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">10</span></span>
+            <button class="btn-present" onclick="toggleFullscreen()">Present</button>
+        </div>
+    </nav>
+
+    <!-- Slides Container -->
+    <div class="slides-container">
+
+        <!-- Slide 1: Hero -->
+        <section class="slide active" data-slide="1">
+            <div class="slide-content hero-content">
+                <div class="hero-badge">
+                    <span>●</span> Investor Presentation • March 2026
+                </div>
+                <h1 class="hero-title animate-in">
+                    <span class="accent">TrueYield</span>
+                </h1>
+                <p class="hero-subtitle animate-in delay-1">
+                    Transforming prop trading through sustainable unit economics
+                </p>
+                <div class="hero-stats animate-in delay-2">
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" data-count="2000000" data-prefix="€">€0</div>
+                        <div class="hero-stat-label">Funding Request</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" data-count="18" data-suffix=" mo">0</div>
+                        <div class="hero-stat-label">Path to Breakeven</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" data-count="3" data-suffix="x">0</div>
+                        <div class="hero-stat-label">Projected ROI</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: The Opportunity -->
+        <section class="slide" data-slide="2">
+            <div class="slide-content">
+                <div class="label animate-in">The Opportunity</div>
+                <h2 class="headline animate-in delay-1">
+                    Prop trading is a <span class="accent">$2.7B market</span><br>
+                    growing 15% annually
+                </h2>
+                <p class="subheadline animate-in delay-2">
+                    Traders need capital. We provide funded accounts with challenge-based evaluation.
+                    The model works—we just need to optimize unit economics.
+                </p>
+                <div class="metrics-grid animate-in delay-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Market Size (2025)</div>
+                        <div class="metric-value" data-count="2700000000" data-prefix="$">$0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Annual Growth Rate</div>
+                        <div class="metric-value success" data-count="15" data-suffix="%">0%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Active Traders Globally</div>
+                        <div class="metric-value" data-count="13500000" data-suffix="">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg. Challenge Price</div>
+                        <div class="metric-value" data-count="225" data-prefix="€">€0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Current State -->
+        <section class="slide" data-slide="3">
+            <div class="slide-content">
+                <div class="label animate-in">Current State</div>
+                <h2 class="headline animate-in delay-1">
+                    We have <span class="accent">traction</span> and a<br>
+                    clear path forward
+                </h2>
+                <div class="two-col animate-in delay-2">
+                    <div>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div class="metric-card">
+                                <div class="metric-label">Monthly Revenue</div>
+                                <div class="metric-value" data-count="25000" data-prefix="€">€0</div>
+                                <div class="metric-delta positive">↑ Growing</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Bank Balance</div>
+                                <div class="metric-value" data-count="1000000" data-prefix="€">€0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Monthly Customers</div>
+                                <div class="metric-value" data-count="111" data-suffix="">0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Average Order Value</div>
+                                <div class="metric-value" data-count="225" data-prefix="€">€0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Revenue Trend (Aug-Dec 2025)</div>
+                        <canvas id="revenueChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: The Problem -->
+        <section class="slide" data-slide="4">
+            <div class="slide-content">
+                <div class="label animate-in">The Challenge</div>
+                <h2 class="headline animate-in delay-1">
+                    <span class="accent-red">200% payout ratio</span><br>
+                    is burning cash fast
+                </h2>
+                <div class="two-col animate-in delay-2">
+                    <div>
+                        <p class="subheadline" style="margin-bottom: 30px;">
+                            For every €1 of revenue, we're paying out €2 in trader payouts and giveaways.
+                            This aggressive acquisition strategy built our customer base—now we optimize.
+                        </p>
+                        <div class="metric-card danger">
+                            <div class="metric-label">Current Payout Ratio</div>
+                            <div class="metric-value danger">200%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill danger" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card success" style="margin-top: 20px;">
+                            <div class="metric-label">Target Payout Ratio</div>
+                            <div class="metric-value success">45-50%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="burn-visual">
+                        <div class="burn-bar revenue">
+                            <div class="burn-bar-value">€25k</div>
+                            <div class="burn-bar-label">Revenue</div>
+                        </div>
+                        <div class="burn-bar payouts">
+                            <div class="burn-bar-value">€50k</div>
+                            <div class="burn-bar-label">Payouts</div>
+                        </div>
+                        <div class="burn-bar costs">
+                            <div class="burn-bar-value">€100k</div>
+                            <div class="burn-bar-label">Fixed Costs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Unit Economics -->
+        <section class="slide" data-slide="5">
+            <div class="slide-content">
+                <div class="label animate-in">Unit Economics</div>
+                <h2 class="headline animate-in delay-1">
+                    The path to <span class="accent-green">profitability</span><br>
+                    is clear
+                </h2>
+                <div class="two-col-wide animate-in delay-2">
+                    <div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Payout Ratio</span>
+                                <span class="slider-value" id="payoutValue">50%</span>
+                            </div>
+                            <input type="range" id="payoutSlider" min="30" max="80" value="50">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Monthly Growth Rate</span>
+                                <span class="slider-value" id="growthValue">20%</span>
+                            </div>
+                            <input type="range" id="growthSlider" min="5" max="40" value="20">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Marketing Spend</span>
+                                <span class="slider-value" id="marketingValue">15%</span>
+                            </div>
+                            <input type="range" id="marketingSlider" min="5" max="30" value="15">
+                        </div>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr 1fr; margin-top: 30px;">
+                            <div class="metric-card">
+                                <div class="metric-label">Breakeven Revenue</div>
+                                <div class="metric-value" id="breakevenRevenue">€286k</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Breakeven Month</div>
+                                <div class="metric-value success" id="breakevenMonth">Month 15</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr;">
+                            <div class="metric-card">
+                                <div class="metric-label">Paid Ads CAC</div>
+                                <div class="metric-value danger">€222</div>
+                                <div class="metric-delta">ROAS 0.61x</div>
+                            </div>
+                            <div class="metric-card success">
+                                <div class="metric-label">Affiliate CAC</div>
+                                <div class="metric-value success">€56</div>
+                                <div class="metric-delta positive">4x better</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Customer LTV</div>
+                                <div class="metric-value" data-count="450" data-prefix="€">€0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Growth Trajectory -->
+        <section class="slide" data-slide="6">
+            <div class="slide-content">
+                <div class="label animate-in">Growth Trajectory</div>
+                <h2 class="headline animate-in delay-1">
+                    From €25k to <span class="accent-green">€150k/month</span><br>
+                    in 18 months
+                </h2>
+                <div class="two-col animate-in delay-2">
+                    <div class="chart-container" style="height: 350px;">
+                        <div class="chart-title">
+                            <span>Revenue & Customer Growth Projection</span>
+                        </div>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                    <div>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr;">
+                            <div class="metric-card">
+                                <div class="metric-label">Month 6 Revenue</div>
+                                <div class="metric-value" data-count="55000" data-prefix="€">€0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Month 12 Revenue</div>
+                                <div class="metric-value" data-count="95000" data-prefix="€">€0</div>
+                            </div>
+                            <div class="metric-card success">
+                                <div class="metric-label">Month 18 Revenue</div>
+                                <div class="metric-value success" data-count="155000" data-prefix="€">€0</div>
+                            </div>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">JAN '26</div>
+                                <div class="timeline-title">Futures Launch</div>
+                                <div class="timeline-desc">New product line</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">Q2 '26</div>
+                                <div class="timeline-title">Scale Affiliates</div>
+                                <div class="timeline-desc">2x referral revenue</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">Q4 '26</div>
+                                <div class="timeline-title">Breakeven</div>
+                                <div class="timeline-desc">Sustainable ops</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Funding Scenarios -->
+        <section class="slide" data-slide="7">
+            <div class="slide-content">
+                <div class="label animate-in">Funding Scenarios</div>
+                <h2 class="headline animate-in delay-1">
+                    Why <span class="accent">€2M</span> is the<br>
+                    optimal investment
+                </h2>
+                <div class="comparison-grid animate-in delay-2">
+                    <div class="comparison-card" onclick="selectScenario(1)">
+                        <div class="comparison-amount">€1M</div>
+                        <ul class="comparison-list">
+                            <li><span>Runway</span><span class="value">10 months</span></li>
+                            <li><span>Growth Rate</span><span class="value">15%</span></li>
+                            <li><span>Breakeven</span><span class="value">Month 22</span></li>
+                            <li><span>Risk Level</span><span class="value" style="color: var(--accent-yellow)">Medium</span></li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card recommended" onclick="selectScenario(2)">
+                        <div class="comparison-amount">€2M</div>
+                        <ul class="comparison-list">
+                            <li><span>Runway</span><span class="value">18 months</span></li>
+                            <li><span>Growth Rate</span><span class="value">20%</span></li>
+                            <li><span>Breakeven</span><span class="value" style="color: var(--accent-green)">Month 15</span></li>
+                            <li><span>Risk Level</span><span class="value" style="color: var(--accent-green)">Low</span></li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card" onclick="selectScenario(5)">
+                        <div class="comparison-amount">€5M</div>
+                        <ul class="comparison-list">
+                            <li><span>Runway</span><span class="value">36+ months</span></li>
+                            <li><span>Growth Rate</span><span class="value">30%</span></li>
+                            <li><span>Breakeven</span><span class="value">Month 10</span></li>
+                            <li><span>Risk Level</span><span class="value">Dilution</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="chart-container animate-in delay-3" style="margin-top: 40px;">
+                    <div class="chart-title">Bank Balance Projection by Scenario</div>
+                    <canvas id="scenarioChart" height="150"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Risk Mitigation -->
+        <section class="slide" data-slide="8">
+            <div class="slide-content">
+                <div class="label animate-in">Risk Mitigation</div>
+                <h2 class="headline animate-in delay-1">
+                    We've planned for<br>
+                    <span class="accent">every scenario</span>
+                </h2>
+                <div class="risk-grid animate-in delay-2">
+                    <div class="risk-card">
+                        <div class="risk-header">
+                            <div class="risk-icon warning">⚠️</div>
+                            <div class="risk-title">Slower Growth</div>
+                        </div>
+                        <div class="risk-mitigation">
+                            If growth is 10% instead of 20%, <strong>€2M funding extends runway to 24 months</strong>,
+                            giving us time to iterate on acquisition channels.
+                        </div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="risk-header">
+                            <div class="risk-icon danger">🔥</div>
+                            <div class="risk-title">High Payout Ratio</div>
+                        </div>
+                        <div class="risk-mitigation">
+                            If payout ratio stays at 60%, we <strong>cut giveaways entirely</strong> and focus on
+                            organic + affiliate channels (64% of revenue is already free).
+                        </div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="risk-header">
+                            <div class="risk-icon warning">📉</div>
+                            <div class="risk-title">Market Downturn</div>
+                        </div>
+                        <div class="risk-mitigation">
+                            Prop trading demand increases in volatility. We've seen <strong>20% revenue spikes</strong>
+                            during market uncertainty periods.
+                        </div>
+                    </div>
+                    <div class="risk-card">
+                        <div class="risk-header">
+                            <div class="risk-icon danger">💸</div>
+                            <div class="risk-title">Cash Runway</div>
+                        </div>
+                        <div class="risk-mitigation">
+                            With €2M, even in worst-case scenario (5% growth, 70% payout),
+                            <strong>we have 15+ months</strong> to achieve sustainability.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 9: The Ask -->
+        <section class="slide" data-slide="9">
+            <div class="slide-content">
+                <div class="label animate-in">The Ask</div>
+                <div class="ask-amount animate-in delay-1">
+                    <div class="ask-value">€2M</div>
+                    <div class="ask-label">Series Seed Investment</div>
+                </div>
+                <h3 class="animate-in delay-2" style="text-align: center; margin-bottom: 40px; color: var(--text-secondary);">
+                    Use of Funds
+                </h3>
+                <div class="use-of-funds animate-in delay-3">
+                    <div class="fund-item">
+                        <div class="fund-percent">40%</div>
+                        <div class="fund-amount">€800k</div>
+                        <div class="fund-label">Working Capital<br>(Trader Payouts)</div>
+                    </div>
+                    <div class="fund-item">
+                        <div class="fund-percent">30%</div>
+                        <div class="fund-amount">€600k</div>
+                        <div class="fund-label">Marketing &<br>Acquisition</div>
+                    </div>
+                    <div class="fund-item">
+                        <div class="fund-percent">20%</div>
+                        <div class="fund-amount">€400k</div>
+                        <div class="fund-label">Team &<br>Operations</div>
+                    </div>
+                    <div class="fund-item">
+                        <div class="fund-percent">10%</div>
+                        <div class="fund-amount">€200k</div>
+                        <div class="fund-label">Product &<br>Technology</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 10: ROI -->
+        <section class="slide" data-slide="10">
+            <div class="slide-content">
+                <div class="label animate-in">Return on Investment</div>
+                <h2 class="headline animate-in delay-1" style="text-align: center;">
+                    Your investment,<br>
+                    <span class="accent-green">multiplied</span>
+                </h2>
+                <div class="roi-highlight animate-in delay-2">
+                    <div class="roi-value">3-5x</div>
+                    <div class="roi-label">Projected Return in 36 Months</div>
+                </div>
+                <div class="metrics-grid animate-in delay-3" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="metric-card">
+                        <div class="metric-label">Year 1 Revenue</div>
+                        <div class="metric-value" data-count="850000" data-prefix="€">€0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Year 2 Revenue</div>
+                        <div class="metric-value" data-count="2400000" data-prefix="€">€0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Year 3 Revenue</div>
+                        <div class="metric-value success" data-count="5500000" data-prefix="€">€0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Exit Valuation</div>
+                        <div class="metric-value" data-count="15000000" data-prefix="€">€0</div>
+                    </div>
+                </div>
+                <p class="animate-in delay-4" style="text-align: center; margin-top: 40px; font-size: 1.25rem; color: var(--text-secondary);">
+                    Ready to discuss? <strong style="color: var(--accent-green);">Let's build this together.</strong>
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Navigation Arrows -->
+    <div class="nav-arrows">
+        <button class="nav-arrow" id="prevBtn" onclick="prevSlide()">←</button>
+        <button class="nav-arrow" id="nextBtn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        // Slide Management
+        let currentSlide = 1;
+        const totalSlides = 10;
+        let chartsInitialized = {};
+
+        function initDots() {
+            const dotsContainer = document.getElementById('slideDots');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = `slide-dot ${i === 1 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function updateSlideUI() {
+            // Update dots
+            document.querySelectorAll('.slide-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === currentSlide);
+            });
+
+            // Update counter
+            document.getElementById('currentSlide').textContent = currentSlide;
+
+            // Update slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                const slideNum = parseInt(slide.dataset.slide);
+                slide.classList.toggle('active', slideNum === currentSlide);
+            });
+
+            // Update nav buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+
+            // Initialize charts and counters for current slide
+            setTimeout(() => {
+                initSlideContent(currentSlide);
+            }, 300);
+        }
+
+        function goToSlide(n) {
+            currentSlide = Math.max(1, Math.min(n, totalSlides));
+            updateSlideUI();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlideUI();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlideUI();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'Escape') {
+                document.body.classList.remove('fullscreen');
+            }
+        });
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+                document.body.classList.remove('fullscreen');
+            } else {
+                document.documentElement.requestFullscreen();
+                document.body.classList.add('fullscreen');
+            }
+        }
+
+        // Animated Counters
+        function animateCounter(element) {
+            const target = parseInt(element.dataset.count);
+            const prefix = element.dataset.prefix || '';
+            const suffix = element.dataset.suffix || '';
+            const duration = 1500;
+            const start = 0;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * easeOut);
+
+                let displayValue = current.toLocaleString();
+                if (target >= 1000000) {
+                    displayValue = (current / 1000000).toFixed(1) + 'M';
+                } else if (target >= 10000) {
+                    displayValue = (current / 1000).toFixed(0) + 'k';
+                }
+
+                element.textContent = prefix + displayValue + suffix;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // Initialize slide content
+        function initSlideContent(slideNum) {
+            const slide = document.querySelector(`[data-slide="${slideNum}"]`);
+            if (!slide) return;
+
+            // Animate counters
+            slide.querySelectorAll('[data-count]').forEach(el => {
+                if (!el.dataset.animated) {
+                    el.dataset.animated = 'true';
+                    animateCounter(el);
+                }
+            });
+
+            // Initialize charts
+            if (slideNum === 3 && !chartsInitialized[3]) {
+                initRevenueChart();
+                chartsInitialized[3] = true;
+            }
+            if (slideNum === 6 && !chartsInitialized[6]) {
+                initGrowthChart();
+                chartsInitialized[6] = true;
+            }
+            if (slideNum === 7 && !chartsInitialized[7]) {
+                initScenarioChart();
+                chartsInitialized[7] = true;
+            }
+        }
+
+        // Charts
+        function initRevenueChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [8000, 12000, 15000, 20000, 25000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: '#888',
+                                callback: value => '€' + (value/1000) + 'k'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initGrowthChart() {
+            const ctx = document.getElementById('growthChart');
+            if (!ctx) return;
+
+            const months = Array.from({length: 24}, (_, i) => `M${i+1}`);
+            const revenue = [];
+            const customers = [];
+            let rev = 25000;
+            let cust = 111;
+
+            for (let i = 0; i < 24; i++) {
+                revenue.push(rev);
+                customers.push(cust);
+                rev *= 1.12;
+                cust *= 1.12;
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenue,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Customers',
+                        data: customers,
+                        borderColor: '#06b6d4',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#888', usePointStyle: true }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: '#10b981',
+                                callback: value => '€' + (value/1000).toFixed(0) + 'k'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#06b6d4' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initScenarioChart() {
+            const ctx = document.getElementById('scenarioChart');
+            if (!ctx) return;
+
+            const months = Array.from({length: 24}, (_, i) => `M${i+1}`);
+
+            function calculateBalance(funding, growth) {
+                const balances = [];
+                let bank = 1000000 + funding;
+                let rev = 25000;
+
+                for (let i = 0; i < 24; i++) {
+                    const costs = 100000 + (rev * 0.5) + (rev * 0.15);
+                    bank += rev - costs;
+                    balances.push(bank);
+                    rev *= (1 + growth);
+                }
+                return balances;
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: '€1M',
+                        data: calculateBalance(1000000, 0.15),
+                        borderColor: '#f59e0b',
+                        tension: 0.4
+                    }, {
+                        label: '€2M (Recommended)',
+                        data: calculateBalance(2000000, 0.20),
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }, {
+                        label: '€5M',
+                        data: calculateBalance(5000000, 0.30),
+                        borderColor: '#3b82f6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#888', usePointStyle: true }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: '#888',
+                                callback: value => '€' + (value/1000000).toFixed(1) + 'M'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Interactive sliders (Slide 5)
+        function updateUnitEconomics() {
+            const payout = document.getElementById('payoutSlider')?.value || 50;
+            const growth = document.getElementById('growthSlider')?.value || 20;
+            const marketing = document.getElementById('marketingSlider')?.value || 15;
+
+            document.getElementById('payoutValue').textContent = payout + '%';
+            document.getElementById('growthValue').textContent = growth + '%';
+            document.getElementById('marketingValue').textContent = marketing + '%';
+
+            // Calculate breakeven
+            const contributionMargin = 1 - (payout/100) - (marketing/100);
+            const fixedCosts = 100000;
+
+            if (contributionMargin > 0) {
+                const breakevenRev = fixedCosts / contributionMargin;
+                document.getElementById('breakevenRevenue').textContent = '€' + Math.round(breakevenRev/1000) + 'k';
+
+                // Calculate months to breakeven
+                let rev = 25000;
+                let months = 0;
+                while (rev < breakevenRev && months < 36) {
+                    rev *= (1 + growth/100);
+                    months++;
+                }
+                document.getElementById('breakevenMonth').textContent = months < 36 ? 'Month ' + months : 'Never';
+            } else {
+                document.getElementById('breakevenRevenue').textContent = 'Impossible';
+                document.getElementById('breakevenMonth').textContent = 'Never';
+            }
+        }
+
+        document.getElementById('payoutSlider')?.addEventListener('input', updateUnitEconomics);
+        document.getElementById('growthSlider')?.addEventListener('input', updateUnitEconomics);
+        document.getElementById('marketingSlider')?.addEventListener('input', updateUnitEconomics);
+
+        // Scenario selection
+        function selectScenario(amount) {
+            document.querySelectorAll('.comparison-card').forEach(card => {
+                card.classList.remove('recommended');
+            });
+            event.currentTarget.classList.add('recommended');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initDots();
+            document.getElementById('totalSlides').textContent = totalSlides;
+            updateSlideUI();
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>
