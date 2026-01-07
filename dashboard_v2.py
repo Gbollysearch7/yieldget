@@ -37,6 +37,11 @@ st.set_page_config(
 def check_password():
     """Returns True if the user entered the correct password."""
 
+    # Check if password secret is configured
+    if "password" not in st.secrets:
+        st.error("⚠️ Password not configured. Please add 'password' to Streamlit secrets.")
+        return False
+
     def password_entered():
         if st.session_state["password"] == st.secrets["password"]:
             st.session_state["password_correct"] = True
