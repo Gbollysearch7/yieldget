@@ -57,7 +57,7 @@ st.markdown("""
 # BASELINE DATA (From all sources)
 # =============================================================================
 
-# From Stripe + GA4 (Aug-Dec 2025)
+# From Stripe + GA4 + Google Ads (Aug-Dec 2025)
 HISTORICAL = {
     "period": "Aug-Dec 2025",
     "total_revenue": 65000,
@@ -65,17 +65,44 @@ HISTORICAL = {
     "first_time_purchasers": 275,
     "aov": 225,
     "revenue_by_channel": {
-        "Direct": {"revenue": 23000, "purchasers": 109, "cac": 0},
-        "Organic": {"revenue": 19000, "purchasers": 79, "cac": 0},
+        "Organic + Direct": {"revenue": 42000, "purchasers": 188, "cac": 0},  # Combined organic & direct (free traffic)
         "Referral/Affiliates": {"revenue": 11000, "purchasers": 65, "cac": 56},
         "Email/SMS": {"revenue": 5800, "purchasers": 20, "cac": 5},
-        "Paid Ads": {"revenue": 4800, "purchasers": 43, "cac": 222},
+        "Paid Ads (Google)": {"revenue": 14500, "purchasers": 108, "cac": 222},  # Real Google Ads data
     },
     "paid_ads": {
-        "spend": 23900,
-        "revenue": 14500,
-        "roas": 0.61,
-        "cpa": 222,
+        "spend": 23900,  # Total Google Ads spend
+        "revenue": 14500,  # sGTM Purchase value
+        "purchases": 107.5,  # sGTM Purchases
+        "clicks": 9660,
+        "impressions": 83387,
+        "ctr": 3.52,
+        "cpc_search": 2.45,
+        "cpc_cross": 2.52,
+        "roas": 0.61,  # 14500 / 23900
+        "cpa": 222,  # 23900 / 107.5
+        "campaigns": {
+            "Search High Intent Keywords": {"cost": 6465, "purchases": 36, "revenue": 3919, "roas": 0.61},
+            "Performance Max GER": {"cost": 5551, "purchases": 33.62, "revenue": 4761, "roas": 0.86},
+            "Valiant Search High Intent": {"cost": 4048, "purchases": 4.5, "revenue": 516, "roas": 0.13},
+            "Traffic Search Brand Europe": {"cost": 2624, "purchases": 26.68, "revenue": 4438, "roas": 1.69},
+            "Performance Max ENG": {"cost": 2072, "purchases": 3.7, "revenue": 726, "roas": 0.35},
+        },
+        "demographics": {
+            "top_gender": "Male",
+            "top_age": "25-44",
+        },
+        "devices": {
+            "mobile": 57.6,
+            "desktop": 41.1,
+            "tablet": 1.3,
+        },
+        "top_keywords": [
+            {"keyword": "the prop trading", "cost": 2792, "revenue": 2400, "ctr": 3.79},
+            {"keyword": "traders yard", "cost": 1469, "revenue": 221, "ctr": 4.19},
+            {"keyword": "Propfirm", "cost": 1057, "revenue": 228, "ctr": 2.58},
+            {"keyword": "prop trading firm", "cost": 1000, "revenue": 625, "ctr": 3.0},
+        ],
     }
 }
 
@@ -177,6 +204,10 @@ def run_monthly_projection(
     data = []
     revenue = starting_revenue
 
+    # Calculate contribution margin for breakeven
+    contribution_margin = 1 - payout_ratio - marketing_ratio - giveaway_ratio
+    breakeven_revenue = fixed_costs / contribution_margin if contribution_margin > 0 else float('inf')
+
     for month in range(1, months + 1):
         # Add funding if this is the funding month
         if month == funding_month:
@@ -202,6 +233,10 @@ def run_monthly_projection(
         # Effective payout ratio
         effective_pr = total_payouts / total_revenue if total_revenue > 0 else 0
 
+        # Check if this month hits breakeven (revenue covers all costs)
+        is_breakeven = total_revenue >= breakeven_revenue
+        is_profitable = net_cf >= 0
+
         data.append({
             "Month": month,
             "Base Revenue": revenue,
@@ -217,7 +252,8 @@ def run_monthly_projection(
             "Total Costs": total_costs,
             "Net Cashflow": net_cf,
             "Bank Balance": bank,
-            "Profitable": net_cf >= 0,
+            "Breakeven": is_breakeven,
+            "Profitable": is_profitable,
         })
 
         # Grow base revenue
@@ -265,6 +301,7 @@ page = st.sidebar.radio(
         "💰 Funding Scenarios",
         "🎯 Strategic Scenarios",
         "📊 Marketing Budget Designer",
+        "🎮 Ad Budget Simulator",
         "🔄 Breakeven Playground",
         "📋 Channel Deep Dive",
         "💾 Export Center"
@@ -1306,91 +1343,94 @@ elif page == "📊 Marketing Budget Designer":
     st.markdown("### Channel Allocation")
     st.markdown("*Drag sliders to allocate your budget*")
 
-    # Initialize allocations in session state
+    # Initialize allocations in session state (using integers 0-100 for percentages)
     if "allocations" not in st.session_state:
         st.session_state.allocations = {
-            "Google Ads": 0.15,
-            "Meta Ads": 0.20,
-            "TikTok Ads": 0.10,
-            "X Ads": 0.05,
-            "LinkedIn Ads": 0.00,
-            "Influencer Marketing": 0.15,
-            "Affiliate Costs": 0.20,
-            "Giveaway Payouts": 0.05,
-            "Marketing Team": 0.05,
-            "Marketing Tools": 0.05,
+            "Google Ads": 15,
+            "Meta Ads": 20,
+            "TikTok Ads": 10,
+            "X Ads": 5,
+            "LinkedIn Ads": 0,
+            "Influencer Marketing": 15,
+            "Affiliate Costs": 20,
+            "Giveaway Payouts": 5,
+            "Marketing Team": 5,
+            "Marketing Tools": 5,
         }
 
     # Two-column layout
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        allocations = {}
+        allocations_pct = {}
 
         # Performance-based channels
         st.markdown("#### 📢 Paid Advertising")
         ad_cols = st.columns(3)
 
         with ad_cols[0]:
-            allocations["Google Ads"] = st.slider(
-                "Google Ads", 0.0, 0.40, st.session_state.allocations["Google Ads"], 0.05,
-                format="%.0f%%", key="google"
+            allocations_pct["Google Ads"] = st.slider(
+                "Google Ads", 0, 40, st.session_state.allocations["Google Ads"], 5,
+                format="%d%%", key="google"
             )
         with ad_cols[1]:
-            allocations["Meta Ads"] = st.slider(
-                "Meta Ads", 0.0, 0.40, st.session_state.allocations["Meta Ads"], 0.05,
-                format="%.0f%%", key="meta"
+            allocations_pct["Meta Ads"] = st.slider(
+                "Meta Ads", 0, 40, st.session_state.allocations["Meta Ads"], 5,
+                format="%d%%", key="meta"
             )
         with ad_cols[2]:
-            allocations["TikTok Ads"] = st.slider(
-                "TikTok Ads", 0.0, 0.30, st.session_state.allocations["TikTok Ads"], 0.05,
-                format="%.0f%%", key="tiktok"
+            allocations_pct["TikTok Ads"] = st.slider(
+                "TikTok Ads", 0, 30, st.session_state.allocations["TikTok Ads"], 5,
+                format="%d%%", key="tiktok"
             )
 
         ad_cols2 = st.columns(2)
         with ad_cols2[0]:
-            allocations["X Ads"] = st.slider(
-                "X (Twitter) Ads", 0.0, 0.20, st.session_state.allocations["X Ads"], 0.05,
-                format="%.0f%%", key="x"
+            allocations_pct["X Ads"] = st.slider(
+                "X (Twitter) Ads", 0, 20, st.session_state.allocations["X Ads"], 5,
+                format="%d%%", key="x"
             )
         with ad_cols2[1]:
-            allocations["LinkedIn Ads"] = st.slider(
-                "LinkedIn Ads", 0.0, 0.20, st.session_state.allocations["LinkedIn Ads"], 0.05,
-                format="%.0f%%", key="linkedin"
+            allocations_pct["LinkedIn Ads"] = st.slider(
+                "LinkedIn Ads", 0, 20, st.session_state.allocations["LinkedIn Ads"], 5,
+                format="%d%%", key="linkedin"
             )
 
         st.markdown("#### 🤝 Partnership & Growth")
         growth_cols = st.columns(3)
 
         with growth_cols[0]:
-            allocations["Influencer Marketing"] = st.slider(
-                "Influencers", 0.0, 0.40, st.session_state.allocations["Influencer Marketing"], 0.05,
-                format="%.0f%%", key="influencer"
+            allocations_pct["Influencer Marketing"] = st.slider(
+                "Influencers", 0, 40, st.session_state.allocations["Influencer Marketing"], 5,
+                format="%d%%", key="influencer"
             )
         with growth_cols[1]:
-            allocations["Affiliate Costs"] = st.slider(
-                "Affiliates", 0.0, 0.40, st.session_state.allocations["Affiliate Costs"], 0.05,
-                format="%.0f%%", key="affiliate"
+            allocations_pct["Affiliate Costs"] = st.slider(
+                "Affiliates", 0, 40, st.session_state.allocations["Affiliate Costs"], 5,
+                format="%d%%", key="affiliate"
             )
         with growth_cols[2]:
-            allocations["Giveaway Payouts"] = st.slider(
-                "Giveaways", 0.0, 0.30, st.session_state.allocations["Giveaway Payouts"], 0.05,
-                format="%.0f%%", key="giveaway"
+            allocations_pct["Giveaway Payouts"] = st.slider(
+                "Giveaways", 0, 30, st.session_state.allocations["Giveaway Payouts"], 5,
+                format="%d%%", key="giveaway"
             )
 
         st.markdown("#### 🛠️ Operations")
         ops_cols = st.columns(2)
 
         with ops_cols[0]:
-            allocations["Marketing Team"] = st.slider(
-                "Marketing Team", 0.0, 0.20, st.session_state.allocations["Marketing Team"], 0.05,
-                format="%.0f%%", key="team"
+            allocations_pct["Marketing Team"] = st.slider(
+                "Marketing Team", 0, 20, st.session_state.allocations["Marketing Team"], 5,
+                format="%d%%", key="team"
             )
         with ops_cols[1]:
-            allocations["Marketing Tools"] = st.slider(
-                "Tools & Software", 0.0, 0.15, st.session_state.allocations["Marketing Tools"], 0.05,
-                format="%.0f%%", key="tools"
+            allocations_pct["Marketing Tools"] = st.slider(
+                "Tools & Software", 0, 15, st.session_state.allocations["Marketing Tools"], 5,
+                format="%d%%", key="tools"
             )
+
+        # Convert percentages to decimals for calculations
+        allocations = {k: v / 100.0 for k, v in allocations_pct.items()}
 
     with col2:
         # Summary card
@@ -1485,6 +1525,262 @@ elif page == "📊 Marketing Budget Designer":
     for i, month in enumerate(months):
         total_row[month] = format_currency(total_budget * total_alloc * growth_factor[i])
     table_data.append(total_row)
+
+    st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
+
+# =============================================================================
+# PAGE: AD BUDGET SIMULATOR
+# =============================================================================
+
+elif page == "🎮 Ad Budget Simulator":
+    st.title("Ad Budget Simulator")
+    st.markdown("### Play with different ad spend scenarios to see revenue impact")
+
+    st.info("🎮 **Move the sliders to explore how increased Google & Meta ad spend impacts your projected revenue. Not limited to 18-month runway!**")
+
+    # Current state metrics
+    st.markdown("---")
+    st.markdown("#### 📊 Current State (Baseline)")
+    current_cols = st.columns(4)
+    with current_cols[0]:
+        st.metric("Current Monthly Ads", "€12,000", help="Current combined Google + Meta spend")
+    with current_cols[1]:
+        st.metric("Current ROAS", "0.61x", "-€0.39 per €1", delta_color="inverse")
+    with current_cols[2]:
+        st.metric("Current CAC", "€222", help="Customer acquisition cost for paid ads")
+    with current_cols[3]:
+        st.metric("Monthly Revenue from Ads", "€7,320", help="At 0.61x ROAS")
+
+    st.markdown("---")
+
+    # Interactive sliders
+    st.markdown("#### 🎚️ Adjust Your Ad Spend")
+
+    slider_cols = st.columns(4)
+
+    with slider_cols[0]:
+        google_ads = st.slider(
+            "Monthly Google Ads (€)",
+            min_value=5000,
+            max_value=50000,
+            value=10000,
+            step=1000,
+            format="€%d",
+            help="Adjust monthly Google Ads budget"
+        )
+
+    with slider_cols[1]:
+        meta_ads = st.slider(
+            "Monthly Meta Ads (€)",
+            min_value=5000,
+            max_value=50000,
+            value=10000,
+            step=1000,
+            format="€%d",
+            help="Adjust monthly Meta Ads budget"
+        )
+
+    with slider_cols[2]:
+        runway_months = st.slider(
+            "Campaign Duration (months)",
+            min_value=6,
+            max_value=36,
+            value=12,
+            step=3,
+            help="How long will you run these campaigns?"
+        )
+
+    with slider_cols[3]:
+        target_roas = st.slider(
+            "Expected ROAS",
+            min_value=0.5,
+            max_value=4.0,
+            value=1.5,
+            step=0.1,
+            format="%.1fx",
+            help="Target return on ad spend after optimization"
+        )
+
+    # Calculate projections
+    monthly_total = google_ads + meta_ads
+    total_investment = monthly_total * runway_months
+    projected_revenue = total_investment * target_roas
+    net_profit = projected_revenue - total_investment
+    profit_percentage = ((projected_revenue / total_investment) - 1) * 100 if total_investment > 0 else 0
+    target_cac = 100  # Optimized CAC target
+    customers_acquired = int(projected_revenue / target_cac) if target_cac > 0 else 0
+
+    # Comparison with current
+    current_monthly = 12000
+    percent_increase = ((monthly_total - current_monthly) / current_monthly) * 100 if current_monthly > 0 else 0
+
+    st.markdown("---")
+
+    # Revenue Impact Analysis
+    st.markdown("#### 💰 Revenue Impact Analysis")
+
+    impact_cols = st.columns(4)
+
+    with impact_cols[0]:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 20px; border-radius: 10px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.85rem;">Total Ad Investment</p>
+            <h2 style="color: white; margin: 8px 0;">{format_currency(total_investment)}</h2>
+            <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.8rem;">{format_currency(monthly_total)}/mo × {runway_months} months</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with impact_cols[1]:
+        color = "#10b981" if target_roas >= 1 else "#ef4444"
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, {color} 0%, {color}99 100%); padding: 20px; border-radius: 10px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.85rem;">Projected Ad Revenue</p>
+            <h2 style="color: white; margin: 8px 0;">{format_currency(projected_revenue)}</h2>
+            <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.8rem;">At {target_roas:.1f}x ROAS</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with impact_cols[2]:
+        profit_color = "#3b82f6" if net_profit >= 0 else "#ef4444"
+        profit_sign = "+" if net_profit >= 0 else ""
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, {profit_color} 0%, #8b5cf6 100%); padding: 20px; border-radius: 10px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.85rem;">Net Profit from Ads</p>
+            <h2 style="color: white; margin: 8px 0;">{profit_sign}{format_currency(abs(net_profit))}</h2>
+            <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.8rem;">{profit_sign}{profit_percentage:.0f}% return</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with impact_cols[3]:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); padding: 20px; border-radius: 10px; text-align: center;">
+            <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 0.85rem;">New Customers Acquired</p>
+            <h2 style="color: white; margin: 8px 0;">~{customers_acquired:,}</h2>
+            <p style="color: rgba(255,255,255,0.7); margin: 0; font-size: 0.8rem;">At €{target_cac} target CAC</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Comparison bar
+    st.markdown("---")
+    compare_cols = st.columns([1, 0.5, 1, 1])
+    with compare_cols[0]:
+        st.metric("Current Monthly Ads", "€12,000")
+    with compare_cols[1]:
+        st.markdown("<h2 style='text-align: center; color: #6b7280;'>→</h2>", unsafe_allow_html=True)
+    with compare_cols[2]:
+        st.metric("Your Selection", format_currency(monthly_total))
+    with compare_cols[3]:
+        delta_color = "normal" if percent_increase >= 0 else "inverse"
+        st.metric("Change", f"{percent_increase:+.0f}%", delta_color=delta_color)
+
+    st.markdown("---")
+
+    # Revenue vs Spend Chart
+    st.markdown("#### 📈 Revenue vs Ad Spend Over Time")
+
+    # Generate monthly data for chart
+    months = [f"M{i+1}" for i in range(runway_months)]
+    monthly_spend = [monthly_total] * runway_months
+
+    # Revenue grows as ads optimize (starts at 0.61x, grows to target ROAS)
+    monthly_revenue = []
+    cumulative_revenue = []
+    cumulative_spend = []
+    running_revenue = 0
+    running_spend = 0
+
+    for month in range(runway_months):
+        current_roas_improvement = 0.61 + ((target_roas - 0.61) * ((month + 1) / runway_months))
+        month_revenue = monthly_total * current_roas_improvement
+        monthly_revenue.append(month_revenue)
+
+        running_revenue += month_revenue
+        running_spend += monthly_total
+        cumulative_revenue.append(running_revenue)
+        cumulative_spend.append(running_spend)
+
+    # Create chart
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # Monthly bars
+    fig.add_trace(
+        go.Bar(name='Monthly Ad Spend', x=months, y=monthly_spend, marker_color='#ef4444', opacity=0.7),
+        secondary_y=False
+    )
+    fig.add_trace(
+        go.Bar(name='Monthly Revenue', x=months, y=monthly_revenue, marker_color='#10b981', opacity=0.7),
+        secondary_y=False
+    )
+
+    # Cumulative line
+    fig.add_trace(
+        go.Scatter(name='Cumulative Revenue', x=months, y=cumulative_revenue, mode='lines+markers',
+                   line=dict(color='#3b82f6', width=3)),
+        secondary_y=True
+    )
+
+    fig.update_layout(
+        barmode='group',
+        height=400,
+        template='plotly_dark',
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        hovermode='x unified'
+    )
+
+    fig.update_yaxes(title_text="Monthly (€)", secondary_y=False, gridcolor='rgba(255,255,255,0.1)')
+    fig.update_yaxes(title_text="Cumulative Revenue (€)", secondary_y=True, gridcolor='rgba(255,255,255,0.1)')
+    fig.update_xaxes(gridcolor='rgba(255,255,255,0.1)')
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Key Insights
+    st.markdown("---")
+    st.markdown("#### 💡 Key Insights")
+
+    insight_cols = st.columns(3)
+
+    with insight_cols[0]:
+        st.warning(f"""
+        **⚠️ Current Problem**
+
+        Paid ads have **0.61x ROAS** - we're losing €0.39 for every €1 spent. Must optimize before scaling.
+        """)
+
+    with insight_cols[1]:
+        st.success(f"""
+        **✅ Recommendation**
+
+        Keep paid ads at **40% of marketing** (~€13k/mo). Prioritize affiliates (25%) which have 4x better CAC.
+        """)
+
+    with insight_cols[2]:
+        st.info(f"""
+        **💡 Scale Strategy**
+
+        Once ROAS hits **1.5x+**, increase Google/Meta to 50% of budget. Scale what works, cut what doesn't.
+        """)
+
+    # Projection table
+    st.markdown("---")
+    st.markdown("#### 📊 Monthly Projection Table")
+
+    table_data = []
+    running_total = 0
+    for i in range(runway_months):
+        current_roas = 0.61 + ((target_roas - 0.61) * ((i + 1) / runway_months))
+        month_rev = monthly_total * current_roas
+        running_total += month_rev
+        table_data.append({
+            "Month": f"M{i+1}",
+            "Google Ads": format_currency(google_ads),
+            "Meta Ads": format_currency(meta_ads),
+            "Total Spend": format_currency(monthly_total),
+            "ROAS": f"{current_roas:.2f}x",
+            "Revenue": format_currency(month_rev),
+            "Cumulative": format_currency(running_total)
+        })
 
     st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
 
@@ -1805,15 +2101,73 @@ elif page == "📋 Channel Deep Dive":
         col4.metric("Net P&L", format_currency(HISTORICAL["paid_ads"]["revenue"] - HISTORICAL["paid_ads"]["spend"]),
                    delta="Loss", delta_color="inverse")
 
-        st.error("""
+        st.error(f"""
         ### ⚠️ Critical Issue: Paid Ads Losing Money
 
-        - **Spent:** €23,900
-        - **Generated:** €14,500
-        - **Net Loss:** €9,400
+        - **Spent:** €{HISTORICAL['paid_ads']['spend']:,}
+        - **Generated:** €{HISTORICAL['paid_ads']['revenue']:,}
+        - **Net Loss:** €{HISTORICAL['paid_ads']['spend'] - HISTORICAL['paid_ads']['revenue']:,}
 
-        **Every €1 spent on ads returns only €0.61**
+        **Every €1 spent on ads returns only €{HISTORICAL['paid_ads']['roas']:.2f}**
         """)
+
+        st.markdown("---")
+        st.markdown("### Campaign Performance Breakdown")
+
+        # Campaign performance table
+        campaign_data = []
+        for name, data in HISTORICAL["paid_ads"]["campaigns"].items():
+            campaign_data.append({
+                "Campaign": name,
+                "Cost": f"€{data['cost']:,}",
+                "Purchases": f"{data['purchases']:.1f}",
+                "Revenue": f"€{data['revenue']:,}",
+                "ROAS": f"{data['roas']:.2f}x",
+                "Status": "✅ Profitable" if data['roas'] >= 1.0 else "❌ Losing"
+            })
+
+        campaign_df = pd.DataFrame(campaign_data)
+        st.dataframe(campaign_df, use_container_width=True, hide_index=True)
+
+        # Best performing campaign insight
+        best_campaign = max(HISTORICAL["paid_ads"]["campaigns"].items(), key=lambda x: x[1]["roas"])
+        st.success(f"""
+        **Best Performer:** {best_campaign[0]}
+        - ROAS: **{best_campaign[1]['roas']:.2f}x**
+        - Cost: €{best_campaign[1]['cost']:,}
+        - Revenue: €{best_campaign[1]['revenue']:,}
+
+        **Recommendation:** Scale this campaign and pause underperformers.
+        """)
+
+        # Device & Demographics
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### Device Breakdown")
+            device_data = pd.DataFrame([
+                {"Device": "Mobile", "Share": HISTORICAL["paid_ads"]["devices"]["mobile"]},
+                {"Device": "Desktop", "Share": HISTORICAL["paid_ads"]["devices"]["desktop"]},
+                {"Device": "Tablet", "Share": HISTORICAL["paid_ads"]["devices"]["tablet"]},
+            ])
+            fig = px.pie(device_data, values="Share", names="Device",
+                        color_discrete_sequence=["#3b82f6", "#06b6d4", "#8b5cf6"])
+            fig.update_layout(height=250, margin=dict(t=20, b=20))
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            st.markdown("#### Top Demographics")
+            st.info(f"""
+            **Primary Audience:**
+            - Gender: **{HISTORICAL['paid_ads']['demographics']['top_gender']}**
+            - Age: **{HISTORICAL['paid_ads']['demographics']['top_age']}**
+
+            **Traffic Metrics:**
+            - Clicks: {HISTORICAL['paid_ads']['clicks']:,}
+            - Impressions: {HISTORICAL['paid_ads']['impressions']:,}
+            - CTR: {HISTORICAL['paid_ads']['ctr']}%
+            - CPC: €{HISTORICAL['paid_ads']['cpc_search']:.2f}
+            """)
 
         st.markdown("---")
         st.markdown("### Optimization Recommendations")
@@ -1899,9 +2253,9 @@ elif page == "💾 Export Center":
     st.title("Export Center")
     st.markdown("### Download Reports and Data")
 
-    # Generate default projection
+    # Generate default projection (18 months to show breakeven)
     df_export = run_monthly_projection(
-        months=12,
+        months=18,
         starting_revenue=CURRENT["dec_revenue"],
         growth_rate=0.20,
         payout_ratio=0.50,
@@ -1913,7 +2267,7 @@ elif page == "💾 Export Center":
     tab1, tab2, tab3 = st.tabs(["📊 Projections", "📋 Summary", "📈 All Data"])
 
     with tab1:
-        st.markdown("### 12-Month Projection (€2M Funding)")
+        st.markdown("### 18-Month Projection (€2M Funding)")
         st.dataframe(df_export, use_container_width=True, hide_index=True)
 
         csv = df_export.to_csv(index=False)
@@ -1953,7 +2307,7 @@ elif page == "💾 Export Center":
                 format_currency(df_export["Total Costs"].sum()),
                 format_currency(df_export["Bank Balance"].iloc[-1]),
                 format_currency(df_export["Bank Balance"].min()),
-                f"Month {df_export[df_export['Profitable']]['Month'].min()}" if df_export["Profitable"].any() else "Never",  # Breakeven month
+                f"Month {df_export[df_export['Breakeven']]['Month'].min()}" if df_export["Breakeven"].any() else "Month 15+ (extend projection)",  # Breakeven month
                 format_currency(CURRENT["dec_revenue"]),
                 "€100k-150k/month",
                 "200%",
