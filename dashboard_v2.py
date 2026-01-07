@@ -20,6 +20,17 @@ import numpy as np
 from typing import Dict, List, Tuple
 
 # =============================================================================
+# PAGE CONFIG (must be first Streamlit command)
+# =============================================================================
+
+st.set_page_config(
+    page_title="TrueYield Budget Model V2",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =============================================================================
 # PASSWORD PROTECTION
 # =============================================================================
 
@@ -36,12 +47,6 @@ def check_password():
     if st.session_state.get("password_correct", False):
         return True
 
-    st.set_page_config(
-        page_title="TrueYield Budget Model V2",
-        page_icon="🔒",
-        layout="centered"
-    )
-
     st.markdown("## 🔐 TrueYield Budget Dashboard")
     st.markdown("Please enter the password to access the dashboard.")
 
@@ -55,17 +60,6 @@ def check_password():
 
 if not check_password():
     st.stop()
-
-# =============================================================================
-# PAGE CONFIG
-# =============================================================================
-
-st.set_page_config(
-    page_title="TrueYield Budget Model V2",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # Custom CSS for better styling
 st.markdown("""
