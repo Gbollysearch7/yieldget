@@ -816,7 +816,7 @@ elif page == "💰 Funding Scenarios":
             marketing_ratio = st.slider(
                 "Marketing Spend %",
                 min_value=5,
-                max_value=30,
+                max_value=100,
                 value=15,
                 step=1,
                 format="%d%%",
@@ -837,7 +837,7 @@ elif page == "💰 Funding Scenarios":
             projection_months = st.slider(
                 "Projection Period (months)",
                 min_value=6,
-                max_value=24,
+                max_value=36,
                 value=12,
                 step=3,
                 key="funding_months",
