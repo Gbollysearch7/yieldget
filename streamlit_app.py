@@ -1630,7 +1630,7 @@ elif page == "🎮 Ad Budget Simulator":
         target_roas = st.slider(
             "Expected ROAS",
             min_value=0.5,
-            max_value=4.0,
+            max_value=15.0,
             value=1.5,
             step=0.1,
             format="%.1fx",
