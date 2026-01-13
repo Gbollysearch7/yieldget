@@ -1634,8 +1634,12 @@ elif page == "🎮 Ad Budget Simulator":
             value=1.5,
             step=0.1,
             format="%.1fx",
-            help="Target return on ad spend after optimization"
+            help="Target return on ad spend after optimization (±10-15% variance expected)"
         )
+        # Show expected range
+        roas_low = target_roas * 0.85  # -15%
+        roas_high = target_roas * 1.15  # +15%
+        st.caption(f"Expected range: {roas_low:.1f}x - {roas_high:.1f}x (±15%)")
 
     # Calculate projections
     monthly_total = google_ads + meta_ads
