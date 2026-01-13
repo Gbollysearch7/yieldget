@@ -803,7 +803,7 @@ elif page == "💰 Funding Scenarios":
             payout_ratio = st.slider(
                 "Payout Ratio",
                 min_value=30,
-                max_value=80,
+                max_value=200,
                 value=50,
                 step=5,
                 format="%d%%",
